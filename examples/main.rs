@@ -57,7 +57,7 @@ mod app {
         let mut cp = cx.core;
 
         let mono = Systick::new(cp.SYST, 64_000_000);
-        // Destrukturera periferierna
+       
         let pac::Peripherals {
             SAADC,
             RTC0,
@@ -74,59 +74,56 @@ mod app {
         let port0 = P0Parts::new(P0);
         let port1 = P1Parts::new(P1);
         
-        // --- Display --- \n
-        // Hämta de nödvändiga pinnarna från portarna
+        // Display
         let sck  = port0.p0_05.into_push_pull_output(Level::Low);
         let mosi = port0.p0_04.into_push_pull_output(Level::Low);
         let mut rst = port0.p0_31.into_push_pull_output(Level::Low);
         let cs   = port0.p0_11.into_push_pull_output(Level::Low);
         let dc   = port1.p1_09.into_push_pull_output(Level::Low);
         
-        // Anropa den uppdaterade display::Display::new() med konkreta typer (inga degrade)
+        
         let display = display::Display::new(
             SPIM0,
-            sck,   // typ: P0_05<Output<PushPull>>
-            mosi,  // typ: P0_04<Output<PushPull>>
-            dc,    // typ: P1_09<Output<PushPull>>
-            &mut rst, // typ: &mut P0_31<Output<PushPull>>
-            cs,    // typ: P0_11<Output<PushPull>>
+            sck,   
+            mosi,  
+            dc,    
+            &mut rst, 
+            cs,    
         );
         
-        // --- LED --- 
+        // LED
         let led_pin = port0.p0_09.into_push_pull_output(Level::Low);
         let led = led::Led::new(PWM0, led_pin.into());
         
-        // --- Serial via USB ---
+        // Serial via USB
         let serial = serial::Serial::new(CLOCK, USBD);
         
-        // --- SAADC och Thermistor ---
+        // SAADC and Thermistor
         let saadc_config = nrf52833_hal::saadc::SaadcConfig {
             resolution: nrf52833_hal::saadc::Resolution::_12BIT,
             oversample: nrf52833_hal::saadc::Oversample::OVER8X,
             ..Default::default()
         };
         let saadc = nrf52833_hal::saadc::Saadc::new(SAADC, saadc_config);
-        let sensor_pin = port0.p0_03; // använder standard 'Disconnected' mode
+        let sensor_pin = port0.p0_03; 
         let thermistor = thermistor::Thermistor::new(saadc, sensor_pin);
         
-        // --- Buzzer ---
+        // Buzzer
         let buzzer = buzzer::Buzzer::new(
             port0.p0_28.into_push_pull_output(Level::Low).into(),
             port0.p0_02.into_push_pull_output(Level::High).into(),
         );
         
         
-        // --- RTC --- 
-        // Här har vi ändrat RTC::new så att den bara tar RTC0 (och nödvändiga fält) istället för hela Peripherals.
+        // RTC
         let rtc = rtc::RTC::new(RTC0, unsafe { serial::CLOCKS.as_ref().unwrap() }, &mut cp.NVIC);
 
         
-        // --- Buttons --- 
+        // Buttons
         let button_toggle = port0.p0_20.into_pullup_input().into();
         let button_brighten = port0.p0_29.into_pullup_input().into();
         let button_dimmer  = port0.p0_30.into_pullup_input().into();
         
-        // --- Starta periodiska tasks ---
         read_temperature::spawn_after(1000_u32.millis().into()).unwrap();
         poll_serial::spawn_after(10_u32.millis().into()).unwrap();
         button_poll::spawn_after(50_u32.millis().into()).unwrap();
@@ -164,7 +161,7 @@ mod app {
     read_temperature::spawn_after(1000_u32.millis().into()).unwrap();
 }
 
-    // Handle serial input
+    // Get serial input
     #[task(shared = [serial])]
     fn poll_serial(mut cx: poll_serial::Context) {
         cx.shared.serial.lock(|serial| serial.poll());
@@ -219,7 +216,7 @@ mod app {
         beep_task::spawn_after(5000_u32.millis().into()).unwrap();
     }
 
-    // Idle loop for low power mode
+    
     #[idle]
     fn idle(_cx: idle::Context) -> ! {
         loop {

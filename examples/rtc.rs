@@ -15,8 +15,6 @@ pub struct RTC {
 }
 
 impl RTC {
-    /// Skapar och initierar RTC med de redan konfigurerade klockorna.
-    /// Förväntar sig att `clocks` har typ: &'static Clocks<ExternalOscillator, Internal, LfOscStarted>
     pub fn new(
         rtc0: pac::RTC0,
         clocks: &'static Clocks<ExternalOscillator, Internal, LfOscStarted>,
@@ -24,7 +22,6 @@ impl RTC {
     ) -> Self {
         rprintln!("--- RTC time display start ---");
 
-        // Vi antar att klockorna redan är konfigurerade, så vi konfigurerar inte om dem här.
         let mut rtc = Rtc::new(rtc0, 4095).unwrap();
         rtc.enable_event(RtcInterrupt::Compare0);
         rtc.enable_interrupt(RtcInterrupt::Compare0, Some(nvic));

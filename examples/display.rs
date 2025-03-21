@@ -1,4 +1,3 @@
-//! display.rs (uppdaterad version utan .degrade, med konkreta typer)
 #![no_std]
 
 use nrf52833_hal::{
@@ -29,7 +28,6 @@ use core::fmt::Write;
 pub enum MenuState {
     Clock,
     Temperature,
-    Settings,
 }
 
 pub struct Display {
@@ -83,15 +81,13 @@ impl Display {
         match self.menu_state {
             MenuState::Clock => self.show_time(12, 30, 45),
             MenuState::Temperature => self.show_temperature(25.3),
-            MenuState::Settings => self.show_settings(),
         }
     }
 
     pub fn next_menu(&mut self) {
         self.menu_state = match self.menu_state {
             MenuState::Clock => MenuState::Temperature,
-            MenuState::Temperature => MenuState::Settings,
-            MenuState::Settings => MenuState::Clock,
+            MenuState::Temperature => MenuState::Clock,
         };
     }
 
@@ -107,7 +103,7 @@ impl Display {
 
     pub fn show_temperature(&mut self, temp: f32) {
         let mut buffer: String<16> = String::new();
-        let _ = write!(buffer, "Temp: {:.1}°C", temp);
+        let _ = write!(buffer, "Temp: {:.1} C", temp);
 
         let _ = self.display.clear();
         let style = MonoTextStyle::new(&FONT_10X20, BinaryColor::On);
